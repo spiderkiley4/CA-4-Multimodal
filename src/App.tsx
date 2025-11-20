@@ -23,7 +23,13 @@ const shows = [
     { name: "Yellowstone", service: "Peacock" },
     { name: "Twisted Metal", service: "Peacock" },
     { name: "Halo", service: "Paramount+" },
-    { name: "South Park", service: "Paramount+" }
+    { name: "South Park", service: "Paramount+" },
+    { name: "Example", service: "Example" },
+    { name: "Example", service: "Example" },
+    { name: "Example", service: "Example" },
+    { name: "Example", service: "Example" },
+    { name: "Example", service: "Example" },
+    { name: "Example", service: "Example" },
 ];
 
 const servicePlans: ServicePlans = {
@@ -157,39 +163,50 @@ function App() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 p-8 flex flex-col items-center">
-            <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl p-8">
-                <h1 className="text-4xl font-bold text-center mb-6">Streaming Cost by Shows</h1>
-
-                <p className="text-gray-600 text-center mb-8">
-                    Select the shows you want to watch. We'll tell you which streaming services you need and show pricing for each tier.
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {shows.map((show) => (
-                        <label
-                            key={show.name}
-                            className="flex items-center p-4 border border-gray-200 rounded-xl shadow-sm bg-gray-50 cursor-pointer hover:bg-gray-100 transition"
-                        >
-                            <input
-                                type="checkbox"
-                                checked={selectedShows.includes(show.name)}
-                                onChange={() => toggleShow(show.name)}
-                                className="mr-4 w-5 h-5"
-                            />
-                            <span
-                                className={`inline-block w-3 h-3 rounded-full mr-4 flex-shrink-0 ${showBadgeStyles[show.service] || 'bg-gray-300'}`}
-                                aria-hidden
-                            />
-                            <div>
-                                <p className="font-semibold text-lg">{show.name}</p>
-                                <p className="text-gray-600 text-sm">On {show.service}</p>
-                            </div>
-                        </label>
-                    ))}
+        <div className="min-h-screen min bg-gray-100 p-8 flex flex-col items-center">
+            <div className="flex w-full max-w-full bg-white rounded-2xl shadow-xl p-8 space-x-5">
+                <div className="max-h-screen">
+                    <h1 className="text-4xl font-bold text-center mb-6">Streaming Cost by Shows</h1>
+                    <p className="text-gray-600 text-center mb-8">
+                        Select the shows you want to watch. We'll tell you which streaming services you need and show pricing for each tier.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[75vh] overflow-auto">
+                        {shows.map((show) => (
+                            <label
+                                key={show.name}
+                                className="flex items-center p-4 border border-gray-200 rounded-xl shadow-sm bg-gray-50 cursor-pointer hover:bg-gray-100 transition"
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={selectedShows.includes(show.name)}
+                                    onChange={() => toggleShow(show.name)}
+                                    className="mr-4 w-5 h-5"
+                                />
+                                <span
+                                    className={`inline-block w-3 h-3 rounded-full mr-4 shrink-0 ${showBadgeStyles[show.service] || 'bg-gray-300'}`}
+                                    aria-hidden
+                                />
+                                <div>
+                                    <p className="font-semibold text-lg">{show.name}</p>
+                                    <p className="text-gray-600 text-sm">On {show.service}</p>
+                                </div>
+                            </label>
+                        ))}
+                    </div>
                 </div>
 
-                <div className="mt-10">
+                <div className="">
+                    <div className="mt-8 p-6 bg-gray-50 rounded-xl border">
+                        <h3 className="text-lg font-semibold text-center">Total Monthly Cost</h3>
+                        <div className={`mt-4 grid grid-cols-1 sm:grid-cols-${tiers.length} gap-4 text-center`}>
+                            {tiers.map((tier) => (
+                                <div key={tier} className="p-3 bg-white/50 rounded-lg">
+                                    <p className="text-sm text-gray-600">{tier}</p>
+                                    <p className={`text-2xl font-extrabold mt-1 ${getTotalTextColor(totals[tier])}`}>${totals[tier].toFixed(2)}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                     <h2 className="text-2xl font-bold mb-4">Required Services</h2>
 
                     {requiredServices.length === 0 ? (
@@ -224,18 +241,6 @@ function App() {
                             })}
                         </div>
                     )}
-
-                    <div className="mt-8 p-6 bg-gray-50 rounded-xl border">
-                        <h3 className="text-lg font-semibold text-center">Total Monthly Cost</h3>
-                        <div className={`mt-4 grid grid-cols-1 sm:grid-cols-${tiers.length} gap-4 text-center`}>
-                            {tiers.map((tier) => (
-                                <div key={tier} className="p-3 bg-white/50 rounded-lg">
-                                    <p className="text-sm text-gray-600">{tier}</p>
-                                    <p className={`text-2xl font-extrabold mt-1 ${getTotalTextColor(totals[tier])}`}>${totals[tier].toFixed(2)}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
