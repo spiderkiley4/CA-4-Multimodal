@@ -30,44 +30,41 @@ const shows = [
 // Streaming service plans (example tiers)
 const servicePlans: ServicePlans = {
     "Netflix": [
-        { name: "With Ads", price: 6.99 },
-        { name: "No Ads", price: 15.49 },
-        { name: "Premium", price: 22.99 }
+        { name: "With Ads", price: 7.99 },
+        { name: "No Ads", price: 17.99 },
+        { name: "Premium", price: 24.99 }
     ],
     "Hulu": [
-        { name: "With Ads", price: 7.99 },
-        { name: "No Ads", price: 14.99 },
-        { name: "Premium", price: 19.99 }
+        { name: "With Ads", price: 11.99 },
+        { name: "No Ads", price: 18.99 },
+        { name: "Premium", price: 18.99 },
+        
     ],
     "Disney+": [
-        { name: "With Ads", price: 7.99 },
-        { name: "No Ads", price: 13.99 },
-        { name: "Premium", price: 19.99 }
+        { name: "With Ads", price: 11.99 },
+        { name: "No Ads", price: 18.99 },
+        { name: "Premium", price: 18.99 }
     ],
     "Max": [
-        { name: "With Ads", price: 9.99 },
-        { name: "No Ads", price: 15.99 },
-        { name: "Premium", price: 19.99 }
+        { name: "With Ads", price: 10.99 },
+        { name: "No Ads", price: 18.49 },
+        { name: "Premium", price: 22.99 }
     ],
     "Amazon Prime Video": [
-        { name: "With Ads", price: 8.99 },
-        { name: "No Ads", price: 14.99 },
-        { name: "Premium", price: 19.99 }
+        { name: "With Ads", price: 14.99 },
+        { name: "No Ads", price: 17.98 }
     ],
     "Apple TV+": [
-        { name: "With Ads", price: 6.99 },
-        { name: "No Ads", price: 9.99 },
-        { name: "Premium", price: 14.99 }
+        { name: "No Ads", price: 6.99 }
     ],
     "Peacock": [
         { name: "With Ads", price: 7.99 },
-        { name: "No Ads", price: 13.99 },
-        { name: "Premium", price: 19.99 }
+        { name: "No Ads", price: 10.99 },
+        { name: "Premium", price: 16.99 }
     ],
     "Paramount+": [
-        { name: "With Ads", price: 5.99 },
-        { name: "No Ads", price: 11.99 },
-        { name: "Premium", price: 17.99 }
+        { name: "With Ads", price: 7.99 },
+        { name: "No Ads", price: 12.99 }
     ]
 };
 
@@ -94,15 +91,26 @@ function App() {
         )
     );
 
-    // Base total uses the "No Ads" tier for each required service
-    const totalCost = requiredServices
-        .map((service) => {
-            const plans = servicePlans[service] || [];
-            const noAds = plans.find((p) => /no ads/i.test(p.name));
-            return noAds ? noAds.price : 0;
-        })
-        .reduce((a, b) => a + b, 0)
-        .toFixed(2);
+    // Totals for each tier (With Ads, No Ads, Premium)
+    const tiers = ["With Ads", "No Ads", "Premium"];
+    const totals: Record<string, number> = tiers.reduce((acc, tier) => {
+        const sum = requiredServices
+            .map((service) => {
+                const plans = servicePlans[service] || [];
+                // try to find an exact match for the tier first
+                let match = plans.find((p) => new RegExp(tier, "i").test(p.name));
+
+                // If Premium tier isn't present, fall back to the highest-priced available plan
+                if (!match && tier === "Premium" && plans.length > 0) {
+                    match = plans.reduce((best, p) => (best == null || p.price > best.price ? p : best), plans[0]);
+                }
+
+                return match ? match.price : 0;
+            })
+            .reduce((a, b) => a + b, 0);
+        acc[tier] = sum;
+        return acc;
+    }, {} as Record<string, number>);
 
     // Service styling per brand
     const serviceStyles: Record<string, string> = {
@@ -156,25 +164,45 @@ function App() {
                                 const cardClass = serviceStyles[service] || "bg-white text-blue-900 border-blue-300";
                                 return (
                                     <div key={service} className={`${cardClass} p-5 rounded-2xl shadow-xl border`}>
-                                        <h3 className="text-xl font-bold mb-3 text-center">{service}</h3>
-                                        <div className="space-y-3">
-                                            {servicePlans[service]?.map((plan) => (
-                                                <div key={plan.name} className="flex justify-between bg-white/20 p-3 rounded-lg">
-                                                    <span className="font-semibold">{plan.name}</span>
-                                                    <span className="font-bold">${plan.price.toFixed(2)}</span>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <h3 className="text-xl font-bold mb-3">{service}</h3>
+                                                    {(() => {
+                                                        const plans = servicePlans[service] || [];
+                                                        const planContainerClass = `flex flex-wrap ${plans.length === 1 ? "gap-0" : "gap-3"} overflow-hidden`;
+                                                        return (
+                                                            <div className={planContainerClass}>
+                                                                {plans.map((plan) => (
+                                                                    <div
+                                                                        key={plan.name}
+                                                                        className={
+                                                                            plans.length === 1
+                                                                                ? "flex-1 w-full flex flex-col justify-between bg-white/20 p-3 rounded-lg"
+                                                                                : "flex-1 max-w-xs flex flex-col justify-between bg-white/20 p-3 rounded-lg"
+                                                                        }
+                                                                    >
+                                                                        <span className="font-semibold">{plan.name}</span>
+                                                                        <span className="font-bold mt-2">${plan.price.toFixed(2)}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        );
+                                                    })()}
                                     </div>
                                 );
                             })}
                         </div>
                     )}
 
-                    <div className="mt-8 p-6 bg-gray-50 rounded-xl text-center border">
-                        <h3 className="text-lg font-semibold">Total Monthly Cost (No-Ads Base)</h3>
-                        <p className="text-3xl font-extrabold mt-2">${totalCost}</p>
-                        <p className="text-sm text-gray-600 mt-2">This uses the "No Ads" tier for each required service.</p>
+                    <div className="mt-8 p-6 bg-gray-50 rounded-xl border">
+                        <h3 className="text-lg font-semibold text-center">Total Monthly Cost</h3>
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                            {tiers.map((tier) => (
+                                <div key={tier} className="p-3 bg-white/50 rounded-lg">
+                                    <p className="text-sm text-gray-600">{tier}</p>
+                                    <p className="text-2xl font-extrabold mt-1">${totals[tier].toFixed(2)}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <p className="text-sm text-gray-600 mt-4 text-center">Shown per-tier totals across required services.</p>
                     </div>
                 </div>
             </div>
