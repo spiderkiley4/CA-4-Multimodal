@@ -9,13 +9,12 @@ interface ServicePlans {
     [name: string]: Plan[],
 }
 
-// Shows mapped to streaming services
 const shows = [
     { name: "Stranger Things", service: "Netflix" },
     { name: "The Witcher", service: "Netflix" },
     { name: "The Mandalorian", service: "Disney+" },
-    { name: "Loki", service: "Disney+" },
-    { name: "The Boys", service: "Amazon Prime Video" },
+    { name: "The Avengers", service: "Disney+" },
+    { name: "Peacemaker", service: "Amazon Prime Video" },
     { name: "Invincible", service: "Amazon Prime Video" },
     { name: "House of the Dragon", service: "Max" },
     { name: "The Last of Us", service: "Max" },
@@ -24,10 +23,9 @@ const shows = [
     { name: "Yellowstone", service: "Peacock" },
     { name: "Twisted Metal", service: "Peacock" },
     { name: "Halo", service: "Paramount+" },
-    { name: "1883", service: "Paramount+" }
+    { name: "South Park", service: "Paramount+" }
 ];
 
-// Streaming service plans (example tiers)
 const servicePlans: ServicePlans = {
     "Netflix": [
         { name: "With Ads", price: 7.99 },
@@ -37,13 +35,11 @@ const servicePlans: ServicePlans = {
     "Hulu": [
         { name: "With Ads", price: 11.99 },
         { name: "No Ads", price: 18.99 },
-        { name: "Premium", price: 18.99 },
         
     ],
     "Disney+": [
         { name: "With Ads", price: 11.99 },
-        { name: "No Ads", price: 18.99 },
-        { name: "Premium", price: 18.99 }
+        { name: "No Ads", price: 18.99 }
     ],
     "Max": [
         { name: "With Ads", price: 10.99 },
@@ -79,7 +75,6 @@ function App() {
         );
     };
 
-    // Determine required services (unique)
     const requiredServices = Array.from(
         new Set(
             selectedShows
@@ -91,20 +86,38 @@ function App() {
         )
     );
 
-    // Totals for each tier (With Ads, No Ads, Premium)
-    const tiers = ["With Ads", "No Ads", "Premium"];
+    const allAvailableTiers = Array.from(
+        new Set(
+            requiredServices
+                .flatMap((service) => (servicePlans[service] || []).map((plan) => plan.name))
+        )
+    );
+    const tiers = ["With Ads", "No Ads", "Premium"].filter((tier) => allAvailableTiers.includes(tier));
+    const getPreferredPlan = (plans: Plan[], tier: string): Plan | undefined => {
+        if (!plans || plans.length === 0) return undefined;
+        const exact = plans.find((p) => new RegExp(tier, "i").test(p.name));
+        if (exact) return exact;
+
+        const preferenceMap: Record<string, string[]> = {
+            "With Ads": ["With Ads", "No Ads", "Premium"],
+            "No Ads": ["No Ads", "With Ads", "Premium"],
+            "Premium": ["Premium", "No Ads", "With Ads"],
+        };
+
+        const prefs = preferenceMap[tier] || [tier];
+        for (const pref of prefs) {
+            const found = plans.find((p) => new RegExp(pref, "i").test(p.name));
+            if (found) return found;
+        }
+
+        return plans.reduce((best, p) => (best == null || p.price > best.price ? p : best), plans[0]);
+    };
+
     const totals: Record<string, number> = tiers.reduce((acc, tier) => {
         const sum = requiredServices
             .map((service) => {
                 const plans = servicePlans[service] || [];
-                // try to find an exact match for the tier first
-                let match = plans.find((p) => new RegExp(tier, "i").test(p.name));
-
-                // If Premium tier isn't present, fall back to the highest-priced available plan
-                if (!match && tier === "Premium" && plans.length > 0) {
-                    match = plans.reduce((best, p) => (best == null || p.price > best.price ? p : best), plans[0]);
-                }
-
+                const match = getPreferredPlan(plans, tier);
                 return match ? match.price : 0;
             })
             .reduce((a, b) => a + b, 0);
@@ -112,16 +125,35 @@ function App() {
         return acc;
     }, {} as Record<string, number>);
 
-    // Service styling per brand
     const serviceStyles: Record<string, string> = {
-        "Netflix": "bg-red-600 text-white border-red-700",
-        "Disney+": "bg-blue-700 text-white border-blue-800",
-        "Amazon Prime Video": "bg-cyan-600 text-white border-cyan-700",
-        "Max": "bg-purple-700 text-white border-purple-800",
-        "Apple TV+": "bg-gray-800 text-white border-gray-900",
-        "Peacock": "bg-yellow-400 text-black border-yellow-500",
-        "Paramount+": "bg-blue-500 text-white border-blue-600",
-        "Hulu": "bg-green-600 text-white border-green-700"
+        "Netflix": "bg-red-500 text-white border-red-600",
+        "Disney+": "bg-blue-600 text-white border-blue-700",
+        "Amazon Prime Video": "bg-cyan-500 text-white border-cyan-600",
+        "Max": "bg-purple-600 text-white border-purple-700",
+        "Apple TV+": "bg-gray-700 text-white border-gray-800",
+        "Peacock": "bg-yellow-300 text-black border-yellow-400",
+        "Paramount+": "bg-blue-400 text-white border-blue-500",
+        "Hulu": "bg-green-500 text-white border-green-600"
+    };
+
+    const showBadgeStyles: Record<string, string> = {
+        "Netflix": "bg-red-500",
+        "Disney+": "bg-blue-600",
+        "Amazon Prime Video": "bg-cyan-500",
+        "Max": "bg-purple-600",
+        "Apple TV+": "bg-gray-700",
+        "Peacock": "bg-yellow-300",
+        "Paramount+": "bg-blue-400",
+        "Hulu": "bg-green-500"
+    };
+
+    // Color the total price text based on thresholds:
+    // green: < $30, yellow: < $50, orange: $50-70, red: > $70
+    const getTotalTextColor = (total: number) => {
+        if (total < 30) return "text-green-600";
+        if (total < 50) return "text-yellow-600";
+        if (total > 70) return "text-red-600";
+        return "text-orange-600";
     };
 
     return (
@@ -137,13 +169,17 @@ function App() {
                     {shows.map((show) => (
                         <label
                             key={show.name}
-                            className="flex items-center p-4 border rounded-xl shadow-sm bg-gray-50 cursor-pointer hover:bg-gray-100 transition"
+                            className="flex items-center p-4 border border-gray-200 rounded-xl shadow-sm bg-gray-50 cursor-pointer hover:bg-gray-100 transition"
                         >
                             <input
                                 type="checkbox"
                                 checked={selectedShows.includes(show.name)}
                                 onChange={() => toggleShow(show.name)}
                                 className="mr-4 w-5 h-5"
+                            />
+                            <span
+                                className={`inline-block w-3 h-3 rounded-full mr-4 flex-shrink-0 ${showBadgeStyles[show.service] || 'bg-gray-300'}`}
+                                aria-hidden
                             />
                             <div>
                                 <p className="font-semibold text-lg">{show.name}</p>
@@ -162,30 +198,27 @@ function App() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {requiredServices.map((service) => {
                                 const cardClass = serviceStyles[service] || "bg-white text-blue-900 border-blue-300";
+                                const plans = servicePlans[service] || [];
+                                // Only show plans that are in the available tiers for this selection
+                                const visiblePlans = plans.filter((plan) => tiers.includes(plan.name));
                                 return (
                                     <div key={service} className={`${cardClass} p-5 rounded-2xl shadow-xl border`}>
                                         <h3 className="text-xl font-bold mb-3">{service}</h3>
-                                                    {(() => {
-                                                        const plans = servicePlans[service] || [];
-                                                        const planContainerClass = `flex flex-wrap ${plans.length === 1 ? "gap-0" : "gap-3"} overflow-hidden`;
-                                                        return (
-                                                            <div className={planContainerClass}>
-                                                                {plans.map((plan) => (
-                                                                    <div
-                                                                        key={plan.name}
-                                                                        className={
-                                                                            plans.length === 1
-                                                                                ? "flex-1 w-full flex flex-col justify-between bg-white/20 p-3 rounded-lg"
-                                                                                : "flex-1 max-w-xs flex flex-col justify-between bg-white/20 p-3 rounded-lg"
-                                                                        }
-                                                                    >
-                                                                        <span className="font-semibold">{plan.name}</span>
-                                                                        <span className="font-bold mt-2">${plan.price.toFixed(2)}</span>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        );
-                                                    })()}
+                                        <div className={`flex flex-wrap ${visiblePlans.length === 1 ? "gap-0" : "gap-3"} overflow-hidden`}>
+                                            {visiblePlans.map((plan) => (
+                                                <div
+                                                    key={plan.name}
+                                                    className={
+                                                        visiblePlans.length === 1
+                                                            ? "flex-1 w-full flex flex-col justify-between bg-white/20 p-3 rounded-lg"
+                                                            : "flex-1 max-w-xs flex flex-col justify-between bg-white/20 p-3 rounded-lg"
+                                                    }
+                                                >
+                                                    <span className="font-semibold">{plan.name}</span>
+                                                    <span className="font-bold mt-2">${plan.price.toFixed(2)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -194,15 +227,14 @@ function App() {
 
                     <div className="mt-8 p-6 bg-gray-50 rounded-xl border">
                         <h3 className="text-lg font-semibold text-center">Total Monthly Cost</h3>
-                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                        <div className={`mt-4 grid grid-cols-1 sm:grid-cols-${tiers.length} gap-4 text-center`}>
                             {tiers.map((tier) => (
                                 <div key={tier} className="p-3 bg-white/50 rounded-lg">
                                     <p className="text-sm text-gray-600">{tier}</p>
-                                    <p className="text-2xl font-extrabold mt-1">${totals[tier].toFixed(2)}</p>
+                                    <p className={`text-2xl font-extrabold mt-1 ${getTotalTextColor(totals[tier])}`}>${totals[tier].toFixed(2)}</p>
                                 </div>
                             ))}
                         </div>
-                        <p className="text-sm text-gray-600 mt-4 text-center">Shown per-tier totals across required services.</p>
                     </div>
                 </div>
             </div>
