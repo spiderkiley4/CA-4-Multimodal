@@ -164,7 +164,7 @@ function App() {
 
     return (
         <div className="min-h-screen min bg-gray-100 p-8 flex flex-col items-center">
-            <div className="flex w-full max-w-full bg-white rounded-2xl shadow-xl p-8 space-x-5">
+            <div className="flex w-full max-w-full bg-white rounded-2xl shadow-xl p-8 space-x-8">
                 <div className="max-h-screen">
                     <h1 className="text-4xl font-bold text-center mb-6">Streaming Cost by Shows</h1>
                     <p className="text-gray-600 text-center mb-8">
@@ -195,12 +195,12 @@ function App() {
                     </div>
                 </div>
 
-                <div className="">
-                    <div className="mt-8 p-6 bg-gray-50 rounded-xl border">
+                <div className="flex-1 pl-6">
+                    <div className="mt-8 p-6 bg-gray-50 rounded-xl border w-full">
                         <h3 className="text-lg font-semibold text-center">Total Monthly Cost</h3>
-                        <div className={`mt-4 grid grid-cols-1 sm:grid-cols-${tiers.length} gap-4 text-center`}>
+                        <div className="mt-4 flex flex-row flex-wrap gap-4 justify-center items-center w-full">
                             {tiers.map((tier) => (
-                                <div key={tier} className="p-3 bg-white/50 rounded-lg">
+                                <div key={tier} className="p-3 bg-white/50 rounded-lg flex-1 min-w-[140px] text-center">
                                     <p className="text-sm text-gray-600">{tier}</p>
                                     <p className={`text-2xl font-extrabold mt-1 ${getTotalTextColor(totals[tier])}`}>${totals[tier].toFixed(2)}</p>
                                 </div>
