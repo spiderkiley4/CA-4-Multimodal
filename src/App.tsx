@@ -256,7 +256,7 @@ function App() {
             <div className="w-full max-w-full px-4 sm:px-8">
                 <header className="mb-6 flex items-center justify-between">
                     <div>
-                        <h1 className="text-4xl font-bold">Streaming Cost by Shows</h1>
+                        <h1 className="text-4xl font-bold">Streaming Service Calculator</h1>
                         <p className="text-gray-600 mt-1">Select shows and see services and pricing per tier.</p>
                     </div>
                     <div className="flex items-center gap-3">
