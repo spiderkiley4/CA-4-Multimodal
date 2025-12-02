@@ -46,7 +46,7 @@ const shows = [
     { name: "Moon Knight", service: "Disney+" },
     { name: "Falcon and the Winter Soldier", service: "Disney+" },
     { name: "Hawkeye", service: "Disney+" },
-    { name: "She-Hulk: Attorney at Law", service: "Disney+" },
+    { name: "Avatar", service: "Disney+" },
     { name: "What If...?", service: "Disney+" },
     { name: "Big City Greens", service: "Disney+" },
     { name: "X-Men '97", service: "Disney+" },
