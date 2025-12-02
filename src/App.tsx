@@ -223,25 +223,25 @@ function App() {
     }, [tiers, totals]);
 
     const serviceStyles: Record<string, string> = {
-        Netflix: "bg-red-500 text-white",
+        "Netflix": "bg-red-500 text-white",
         "Disney+": "bg-blue-600 text-white",
         "Amazon Prime Video": "bg-cyan-500 text-white",
-        Max: "bg-purple-600 text-white",
+        "Max": "bg-purple-600 text-white",
         "Apple TV+": "bg-gray-700 text-white",
-        Peacock: "bg-yellow-300 text-black",
+        "Peacock": "bg-yellow-300 text-black",
         "Paramount+": "bg-blue-400 text-white",
-        Hulu: "bg-green-500 text-white",
+        "Hulu": "bg-green-500 text-white",
     };
 
     const showBadgeStyles: Record<string, string> = {
-        Netflix: "bg-red-500",
+        "Netflix": "bg-red-500",
         "Disney+": "bg-blue-600",
         "Amazon Prime Video": "bg-cyan-500",
-        Max: "bg-purple-600",
+        "Max": "bg-purple-600",
         "Apple TV+": "bg-gray-700",
-        Peacock: "bg-yellow-300",
+        "Peacock": "bg-yellow-300",
         "Paramount+": "bg-blue-400",
-        Hulu: "bg-green-500",
+        "Hulu": "bg-green-500",
     };
 
     const getTotalTextColor = (total: number) => {
